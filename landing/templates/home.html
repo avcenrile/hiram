@@ -1,0 +1,71 @@
+{% extends 'base_template.html' %}
+{% load static %}
+
+{% block pagetitle %}Welcome{% endblock %}
+
+{% block css %}<link rel="stylesheet" href="{% static 'styles/welcom.css' %}">{% endblock %}
+
+
+{% block maincontent %}
+<div class="welcomesign">
+<h2>
+  Wanna try out a new hobby?
+</h2>
+<img src="{% static 'images/hiramwelcomdes.png' %}">
+<p>Hiram, is an online rental platform for recreational and hobby-related equipment that connects newcomers with budget-friendly equipment; while providing old-time hobbyists the opportunity to declutter and regain value on their preloved items.</p>
+<button><a href="https://docs.google.com/forms/d/e/1FAIpQLSfCuon2G2NrsWhxcMo4achai5b6MarDief_KXRYkmS32nRD5A/viewform">Interested? Rent Now!</a></button>
+</div>
+
+<div class="affnsus">
+  <h2>
+    Affordable
+  </h2>
+
+  <h2>
+    Sustainable
+  </h2>
+
+</div>
+
+<div class="accessible">
+<h2>
+  Accessible
+</h2>
+<table>
+  <tr>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+  <tr>
+    <tr></tr>
+    <tr></tr>
+    <tr></tr>
+  </tr>
+
+</table>
+</div>
+
+<div class="convenient">
+  <h2>
+    Convenient
+  </h2>
+  
+  <table>
+    <tr>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  
+    <tr>
+      <tr></tr>
+      <tr></tr>
+      <tr></tr>
+    </tr>
+    
+  </table>
+</div>
+
+{% endblock %}

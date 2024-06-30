@@ -1,0 +1,10 @@
+{% extends 'base_template.html' %}
+
+{% block pagetitle %}Welcome{% endblock %}
+
+{% block maincontent %}
+<h2>
+  Welcome!
+</h2>
+<p>Welcome to the Hiram: The website for your borrowing needs</p>
+{% endblock %}
