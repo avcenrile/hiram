@@ -8,63 +8,74 @@
 
 {% block maincontent %}
 <div class="welcomesign">
-<h2>
-  Wanna try out a new hobby?
-</h2>
-<img src="{% static 'images/hiramwelcomdes.png' %}">
-<p>Hiram, is an online rental platform for recreational and hobby-related equipment that connects newcomers with budget-friendly equipment; while providing old-time hobbyists the opportunity to declutter and regain value on their preloved items.</p>
-<button><a href="https://docs.google.com/forms/d/e/1FAIpQLSfCuon2G2NrsWhxcMo4achai5b6MarDief_KXRYkmS32nRD5A/viewform">Interested? Rent Now!</a></button>
+  <img src="{% static 'images/hiramwelcomdes.png' %}" class="welcomeimg">
+  <div class="welcometext">
+    <h2 class="welcometitle" style="text-align: left;">
+      Wanna try out a new hobby?
+    </h2>
+    <p>Hiram, is an online rental platform for recreational and hobby-related equipment that connects newcomers with budget-friendly equipment; while providing old-time hobbyists the opportunity to declutter and regain value on their preloved items.</p>
+    <button><a href="https://docs.google.com/forms/d/e/1FAIpQLSfCuon2G2NrsWhxcMo4achai5b6MarDief_KXRYkmS32nRD5A/viewform"><img src="{% static 'images/hiramformbutton.png' %}" class="formbutton"></a></button>
+  </div>
 </div>
 
-<div class="affnsus">
-  <h2>
-    Affordable
-  </h2>
-
-  <h2>
-    Sustainable
-  </h2>
+<div class="affordable">
+  <div class="affordabletext">
+    <h2 class="affordabletitle">
+      Affordable
+    </h2>
+    <p>On a tight budget or unsure if you want to spend too much on that certain piece of equipment? <p></p>Hiram’s got you! Rent out our products for a time instead!</p>
+  </div>
+  <img src="{% static 'images/affordableimg.png' %}" class="affordableimg">
 
 </div>
 
 <div class="accessible">
-<h2>
-  Accessible
-</h2>
-<table>
-  <tr>
-    <th></th>
-    <th></th>
-    <th></th>
-  </tr>
+  <h2 class="accessibletitle">
+    Accessible
+  </h2>
+  <table>
+    <tr>
+      <th><img src="{% static 'images/13.png' %}" class="accessibleimg"></th>
+      <th><img src="{% static 'images/11.png' %}" class="accessibleimg"></th>
+      <th><img src="{% static 'images/12.png' %}" class="accessibleimg"></th>
+    </tr>
+  
+    <tr>
+      <th><p class="accessibletext">Easy access...</p></th>
+      <th><p class="accessibletext">...To a wide selection of products...</p></th>
+      <th><p class="accessibletext">...at low prices!</p></th>
+    </tr>
+  
+  </table>
+  </div>
 
-  <tr>
-    <tr></tr>
-    <tr></tr>
-    <tr></tr>
-  </tr>
-
-</table>
+<div class="sustainable">
+  <img src="{% static 'images/sustainableimg.png' %}" class="sustainableimg">
+  <div class="sustainabletext">
+    <h2 class="sustainabletitle" style="text-align: left;">
+      Sustainable
+    </h2>
+    <p>Renting items encourages the use of high-quality, durable items that are well-maintained, extending their lifespan and reducing waste. It also promotes responsible consumption by offering easy return and upgrade options.</p>
+  </div>
 </div>
 
 <div class="convenient">
-  <h2>
+  <h2 class="convenienttitle">
     Convenient
   </h2>
-  
   <table>
     <tr>
-      <th></th>
-      <th></th>
-      <th></th>
+      <th><img src="{% static 'images/13.png' %}" class="convenientimg"></th>
+      <th><img src="{% static 'images/14.png' %}" class="convenientimg"></th>
+      <th><img src="{% static 'images/15.png' %}" class="convenientimg"></th>
     </tr>
   
     <tr>
-      <tr></tr>
-      <tr></tr>
-      <tr></tr>
+      <th><p class="convenienttext">Easy renting and browsing</p></th>
+      <th><p class="convenienttext">Secure payment</p></th>
+      <th><p class="convenienttext">Easy returns and upgrades!</p></th>
     </tr>
-    
+  
   </table>
 </div>
 
