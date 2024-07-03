@@ -1,0 +1,184 @@
+main {
+    font-family: "Montserrat", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+}
+
+/* Welcome Part */
+
+.welcomesign {
+    display: flex;
+    justify-content: space-evenly;
+    padding-top: 50px;
+  }
+
+.welcomeimg {
+    height: 300px;
+}
+
+.welcometitle{
+    color:#F55208;
+    font-family: "Nunito Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-variation-settings:
+      "wdth" 100,
+      "YTLC" 500;
+    font-size: 31.8px;
+    font-weight: bolder;
+    margin-bottom: -2%;
+}
+
+.welcometext {
+    display: flexbox;
+    width: 30%;
+    text-align: justify;
+}
+
+.formbutton{
+    display: flexbox;
+    width: 100%;
+    border: none;
+    padding: 0;
+    background: none;
+}
+
+/* Affordability and Sustainability */
+.affordable{
+    display: flex;
+    justify-content: space-evenly;
+    padding-top: 50px;
+}
+
+.affordableimg{
+    height: 300px;
+}
+
+.affordabletitle{
+    color:#F55208;
+    font-family: "Nunito Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-variation-settings:
+      "wdth" 100,
+      "YTLC" 500;
+    font-size: 31.8px;
+    font-weight: bolder;
+    margin-bottom: -2%;
+}
+
+.affordabletext {
+    display: flexbox;
+    width: 30%;
+    text-align: justify;
+}
+
+/* Sustainable */
+.sustainable {
+    display: flex;
+    justify-content: space-evenly;
+    padding-top: 50px;
+  }
+
+.sustainableimg {
+    height: 250px;
+}
+
+.sustainabletitle{
+    color:#F55208;
+    font-family: "Nunito Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-variation-settings:
+      "wdth" 100,
+      "YTLC" 500;
+    font-size: 31.8px;
+    font-weight: bolder;
+    margin-bottom: -2%;
+}
+
+.sustainabletext {
+    display: flexbox;
+    width: 30%;
+    text-align: justify;
+}
+
+/* Accessible (testing some table stuff) */
+.accessible {
+    display: grid;
+    justify-content: space-evenly;
+    padding: 50px;
+}
+
+.accessibleimg  {
+    height: 150px;
+}
+
+
+.accessibletitle {
+    color:#F55208;
+    font-family: "Nunito Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-variation-settings:
+      "wdth" 100,
+      "YTLC" 500;
+    font-size: 31.8px;
+    font-weight: bolder;
+    text-align: center;
+}
+
+.accessibletext {
+    display: flexboxl; 
+    text-align: center;
+    font-weight: 500;
+}
+
+/* convenient */
+.convenient {
+    display: grid;
+    justify-content: space-evenly;
+    padding: 50px;
+  }
+  
+.convenientimg  {
+    height: 150px;
+}
+
+
+.convenienttitle {
+    color:#F55208;
+    font-family: "Nunito Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-variation-settings:
+        "wdth" 100,
+        "YTLC" 500;
+    font-size: 31.8px;
+    font-weight: bolder;
+    text-align: center;
+}
+
+.convenienttext {
+    display: ; 
+    text-align: center;
+    font-weight: 500;
+}
+
+.montserrat {
+    font-family: "Montserrat", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+  }
+  
+/* <uniquifier>: Use a unique and descriptive class name
+    <weight>: Use a value from 200 to 1000 */
+
+.nunito-sans {
+    font-family: "Nunito Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-variation-settings:
+        "wdth" 100,
+        "YTLC" 500;
+}
