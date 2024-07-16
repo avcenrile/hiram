@@ -43,7 +43,7 @@ main {
     background: none;
 }
 
-/* Affordability and Sustainability */
+/* Affordability */
 .affordable{
     display: flex;
     justify-content: space-evenly;
@@ -163,6 +163,48 @@ main {
     display: ; 
     text-align: center;
     font-weight: 500;
+}
+
+/* Social Media Ad */
+.socmed{
+    display: flex;
+    justify-content: space-evenly;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background-color: #4D4C7D;
+    box-sizing: border-box;
+    width: 100%;
+    margin-left: 0;
+}
+
+.socmedimg{
+    height: 300px;
+}
+
+.socmedtitle{
+    color:#F55208;
+    font-family: "Nunito Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-variation-settings:
+      "wdth" 100,
+      "YTLC" 500;
+    font-size: 31.8px;
+    font-weight: bolder;
+    margin-bottom: -2%;
+}
+
+.socmedtext {
+    display: flexbox;
+    width: 30%;
+    text-align: justify;
+    color: #FA940F;
+}
+
+.sociallogo {
+    height: 80px;
+    /* fix this later. band-aid solution#1 */
+    margin-top: 60px;
 }
 
 .montserrat {
