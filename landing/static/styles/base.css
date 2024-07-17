@@ -44,6 +44,10 @@ main {
   text-decoration: none;
 }
 
+.navrent {
+  height: 50px;
+}
+
 .montserrat {
   font-family: "Montserrat", sans-serif;
   font-optical-sizing: auto;
