@@ -1,0 +1,7 @@
+{% load static %} 
+
+main {
+    background: url("/static/images/hiramcomingsoon.png") no-repeat center;
+    height: 650px;
+    padding: 100px 0 0 0;
+}

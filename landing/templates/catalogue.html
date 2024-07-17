@@ -1,10 +1,10 @@
 {% extends 'base_template.html' %}
+{% load static %}
+
 
 {% block pagetitle %}Catalogue{% endblock %}
 
+{% block css %}<link rel="stylesheet" href="{% static 'styles/catalogue.css' %}">{% endblock %}
+
 {% block maincontent %}
-<h2>
-Browse
-</h2>
-<p>Here is the catalogue of items we are offering. if you are interested please answer this form</p>
 {% endblock %}
