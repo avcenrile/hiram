@@ -69,6 +69,7 @@ You can deploy this Django application on various platforms:
    - Modern platform with free tier
    - Good for Django applications
    - Visit: https://railway.app/
+   - **Note**: Make sure all required packages are in requirements.txt (especially django-bootstrap5)
 
 4. **DigitalOcean**:
    - Paid service with droplets starting at $5/month
@@ -79,6 +80,30 @@ You can deploy this Django application on various platforms:
    - Managed service from Amazon
    - Free tier available for 12 months
    - Visit: https://aws.amazon.com/elasticbeanstalk/
+
+## Deploying to Railway
+
+1. Create a Railway account at https://railway.app/
+2. Install the Railway CLI: `npm i -g @railway/cli`
+3. Login to Railway: `railway login`
+4. Initialize your project: `railway init`
+5. Create a PostgreSQL database: `railway add`
+6. Set environment variables:
+   ```
+   railway variables set SECRET_KEY=your_secret_key
+   railway variables set DEBUG=False
+   railway variables set DATABASE_URL=${{Postgres.DATABASE_URL}}
+   ```
+7. Deploy your application: `railway up`
+8. Open your application: `railway open`
+
+### Troubleshooting Railway Deployment
+
+If you encounter the error "Worker failed to boot" with "ModuleNotFoundError: No module named 'django_bootstrap5'", make sure:
+
+1. The django-bootstrap5 package is included in your requirements.txt file
+2. Run `pip install -r requirements.txt` locally to test if all packages install correctly
+3. Redeploy your application after updating requirements.txt
 
 ## Deployment Steps (General)
 
