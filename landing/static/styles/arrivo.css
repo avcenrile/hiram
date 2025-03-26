@@ -1,0 +1,187 @@
+/* Arrivo CSS Styles */
+
+:root {
+    --primary-color: #ff3b30;
+    --secondary-color: #000000;
+    --background-color: #f8f9fa;
+    --text-color: #333333;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.navbar {
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand img {
+    height: 50px;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: #e0352b;
+    border-color: #e0352b;
+}
+
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: rgba(255, 59, 48, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.feature-icon i {
+    color: var(--primary-color);
+    font-size: 32px;
+}
+
+footer {
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 40px 0;
+}
+
+.social-icon {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+}
+
+/* Map styles */
+#map {
+    height: 500px;
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.info-box {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.next-stop {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.eta {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.driver-controls {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+/* Hero section */
+.hero {
+    padding: 80px 0;
+    text-align: center;
+}
+
+.hero h1 {
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+}
+
+/* Features section */
+.features {
+    padding: 80px 0;
+    background-color: #f8f9fa;
+}
+
+.feature-card {
+    text-align: center;
+    padding: 30px;
+    border-radius: 8px;
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    height: 100%;
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Auth forms */
+.auth-card {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.auth-card .card-title {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* EJeep selection */
+.ejeep-card {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.ejeep-card:hover {
+    transform: translateY(-5px);
+}
+
+.ejeep-card .card-header {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero {
+        padding: 50px 0;
+    }
+    
+    #map {
+        height: 350px;
+    }
+    
+    .feature-card {
+        margin-bottom: 20px;
+    }
+}

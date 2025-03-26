@@ -1,0 +1,53 @@
+{% extends 'landing/base.html' %}
+{% load static %}
+
+{% block title %}Select EJeep Line - Arrivo{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <h1 class="mb-4">Select EJeep Line</h1>
+            <p class="lead mb-5">Choose which EJeep line you want to track</p>
+            
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body p-4">
+                            <h3 class="card-title">Line A</h3>
+                            <p class="card-text text-muted">
+                                Covers: Gate 1, JSEC, Old Rizal Library, Xavier Hall, Cervini Hall, LHS, Old Comm
+                            </p>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    Operating Hours: Monday to Friday 6:00 AM to 6:00 PM<br>
+                                    Saturday 6:00 AM to 1:00 PM
+                                </small>
+                            </p>
+                            <a href="{% url 'landing:ejeep_tracking' line_id='A' %}" class="btn btn-danger btn-lg mt-3 w-100" style="font-size: 1.5rem; padding: 15px;">TRACK LINE A</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body p-4">
+                            <h3 class="card-title">Line B</h3>
+                            <p class="card-text text-muted">
+                                Covers: FLC, JHS, Bellarmine Hall, Cervini Hall, Xavier Hall, SDC, Northwest, Leong Hall
+                            </p>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    Operating Hours: Monday to Friday 6:00 AM to 6:00 PM<br>
+                                    Saturday 6:00 AM to 1:00 PM
+                                </small>
+                            </p>
+                            <a href="{% url 'landing:ejeep_tracking' line_id='B' %}" class="btn btn-danger btn-lg mt-3 w-100" style="font-size: 1.5rem; padding: 15px;">TRACK LINE B</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

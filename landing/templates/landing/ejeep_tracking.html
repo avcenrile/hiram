@@ -1,0 +1,116 @@
+{% extends 'landing/base.html' %}
+{% load static %}
+
+{% block title %}Track EJeep {{ line.get_name_display }} - Arrivo{% endblock %}
+
+{% block extra_head %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>EJeep {{ line.get_name_display }}</h1>
+            <p class="lead">Real-time tracking for EJeep {{ line.get_name_display }}</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'landing:ejeep_selection' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i> Back to Selection
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Map Container -->
+            <div id="map" data-is-driver="{% if is_driver %}true{% else %}false{% endif %}"></div>
+            
+            {% if is_driver %}
+            <!-- Driver Controls (only visible to drivers) -->
+            <div class="driver-controls mt-4">
+                <h4>Driver Controls</h4>
+                <p>You are currently logged in as a driver. Your location is being tracked and shared with passengers.</p>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="activeTracking" checked>
+                    <label class="form-check-label" for="activeTracking">Active Tracking</label>
+                </div>
+                <div id="driverStatus" class="alert alert-success">
+                    <i class="fas fa-broadcast-tower me-2"></i> Your location is being shared
+                </div>
+                <button id="stopTracking" class="btn btn-danger">
+                    <i class="fas fa-stop-circle me-2"></i> Stop Tracking
+                </button>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- EJeep Info -->
+            <div class="info-box">
+                <h4>Current Status</h4>
+                <div id="statusContainer">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>Status:</span>
+                        <span id="ejeepStatus" class="badge bg-success">In Service</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>Last Updated:</span>
+                        <span id="lastUpdated">Loading...</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span>Current Speed:</span>
+                        <span id="currentSpeed">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Next Stop Info -->
+            <div class="info-box">
+                <h4>Next Stop</h4>
+                <div id="nextStopContainer">
+                    <div class="text-center mb-3">
+                        <div class="next-stop" id="nextStopName">Loading...</div>
+                    </div>
+                    <div class="text-center mb-3">
+                        <div>Estimated arrival in</div>
+                        <div class="eta" id="eta">--:--</div>
+                    </div>
+                    <div class="progress mb-3">
+                        <div id="progressBar" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stops List -->
+            <div class="info-box">
+                <h4>All Stops</h4>
+                <ul class="list-group" id="stopsList">
+                    {% for stop in stops %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ stop.name }}
+                        <span class="badge bg-primary rounded-pill" id="stop-eta-{{ stop.id }}">--:--</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<!-- Tracking JS -->
+<script src="{% static 'js/tracking.js' %}"></script>
+
+<script>
+    // Initialize the map when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeMap('map', '{{ line.name }}', document.getElementById('map').dataset.isDriver === 'true');
+    });
+</script>
+{% endblock %}

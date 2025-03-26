@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{% block title %}{% endblock %}</title>
+  {% load static %}
+  {% load bootstrap5 %}
+  {% bootstrap_css %}
+  {% bootstrap_javascript %}
+</head>
+<body>
+
+<div class="container-fluid">
+  <ul class="nav bg-info">
+    <li class="nav-item">
+      <a class="nav-link link-light" href="{% url 'landing:index' %}"><img src="{% static 'images/hiramlogo.png' %}"></a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link link-light" href="{% url 'landing:index' %}">HOME</a>
+    </li>
+  </ul>
+
+  {% block content %}
+  {% endblock %}
+</div>
+</body>
+</html>

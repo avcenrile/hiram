@@ -1,0 +1,58 @@
+{% extends 'landing/base.html' %}
+{% load static %}
+
+{% block title %}Register - Arrivo{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h2 style="color: #ff3b30; font-size: 2.5rem; font-weight: bold; margin-bottom: 1rem;">arrivo</h2>
+                        <h2>Create an Account</h2>
+                        <p class="text-muted">Join Arrivo for real-time EJeep tracking</p>
+                    </div>
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger mb-4" style="font-size: 1.2rem; font-weight: bold; color: #ff3b30; border: 2px solid #ff3b30;">
+                        <h4 class="alert-heading" style="color: #ff3b30;">Registration Error!</h4>
+                        <ul>
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        
+                        <div class="mb-3">
+                            <label for="phone_number" class="form-label">Phone Number (optional)</label>
+                            <input type="tel" class="form-control" id="phone_number" name="phone_number" placeholder="+63 XXX XXX XXXX">
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="is_driver" name="is_driver">
+                            <label class="form-check-label" for="is_driver">I am an EJeep driver</label>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">Register</button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <p>Already have an account? <a href="{% url 'landing:login' %}">Login</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
