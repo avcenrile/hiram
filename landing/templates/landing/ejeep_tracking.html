@@ -32,6 +32,9 @@
             <div class="driver-controls mt-4">
                 <h4>Driver Controls</h4>
                 <p>You are currently logged in as a driver. Your location is being tracked and shared with passengers.</p>
+                <div class="alert alert-info mb-3">
+                    <i class="fas fa-info-circle me-2"></i> For accurate tracking, please ensure your device's location services are enabled and allow this site to access your location.
+                </div>
                 <div class="form-check form-switch mb-3">
                     <input class="form-check-input" type="checkbox" id="activeTracking" checked>
                     <label class="form-check-label" for="activeTracking">Active Tracking</label>
@@ -39,8 +42,11 @@
                 <div id="driverStatus" class="alert alert-success">
                     <i class="fas fa-broadcast-tower me-2"></i> Your location is being shared
                 </div>
-                <button id="stopTracking" class="btn btn-danger">
+                <button id="stopTracking" class="btn" style="background-color: #F12D2F; color: white;">
                     <i class="fas fa-stop-circle me-2"></i> Stop Tracking
+                </button>
+                <button id="requestPermission" class="btn btn-outline-dark ms-2">
+                    <i class="fas fa-bell me-2"></i> Enable Notifications
                 </button>
             </div>
             {% endif %}

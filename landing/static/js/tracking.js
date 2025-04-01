@@ -33,7 +33,7 @@ function initializeMap(mapElementId, lineIdentifier, driverStatus) {
     // Use default Leaflet markers
     const ejeepIcon = L.divIcon({
         className: 'ejeep-marker',
-        html: '<i class="fas fa-bus" style="color: #ff3b30; font-size: 24px;"></i>',
+        html: '<i class="fas fa-bus" style="color: #F12D2F; font-size: 24px;"></i>',
         iconSize: [24, 24],
         iconAnchor: [12, 12],
         popupAnchor: [0, -12]
@@ -41,7 +41,7 @@ function initializeMap(mapElementId, lineIdentifier, driverStatus) {
     
     const stopIcon = L.divIcon({
         className: 'stop-marker',
-        html: '<i class="fas fa-map-marker-alt" style="color: #007bff; font-size: 20px;"></i>',
+        html: '<i class="fas fa-map-marker-alt" style="color: #000000; font-size: 20px;"></i>',
         iconSize: [20, 20],
         iconAnchor: [10, 20],
         popupAnchor: [0, -20]
@@ -62,7 +62,12 @@ function initializeMap(mapElementId, lineIdentifier, driverStatus) {
 // Fetch EJeep location from API
 function fetchEJeepLocation() {
     fetch(`/landing/api/ejeep/location/${lineId}/`)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 // Update stops if not already loaded
@@ -74,6 +79,17 @@ function fetchEJeepLocation() {
                 // Update EJeep location if available
                 if (data.location) {
                     updateEJeepLocation(data.location);
+                    
+                    // Check if the location is recent (within the last 5 minutes)
+                    const lastUpdated = new Date(data.location.last_updated);
+                    const now = new Date();
+                    const diffMinutes = (now - lastUpdated) / (1000 * 60);
+                    
+                    if (diffMinutes > 5) {
+                        // Location data is stale
+                        document.getElementById('ejeepStatus').textContent = 'Connection Lost';
+                        document.getElementById('ejeepStatus').className = 'badge bg-warning';
+                    }
                 } else {
                     // No active EJeep
                     document.getElementById('ejeepStatus').textContent = 'Not in Service';
@@ -83,6 +99,12 @@ function fetchEJeepLocation() {
                     document.getElementById('nextStopName').textContent = 'No EJeep in service';
                     document.getElementById('eta').textContent = '--:--';
                     document.getElementById('progressBar').style.width = '0%';
+                    
+                    // Remove ejeep marker if it exists
+                    if (ejeepMarker) {
+                        ejeepMarker.remove();
+                        ejeepMarker = null;
+                    }
                 }
             } else {
                 console.error('Error fetching EJeep location:', data.error);
@@ -90,6 +112,9 @@ function fetchEJeepLocation() {
         })
         .catch(error => {
             console.error('Error fetching EJeep location:', error);
+            // Show error in UI
+            document.getElementById('ejeepStatus').textContent = 'Connection Error';
+            document.getElementById('ejeepStatus').className = 'badge bg-danger';
         });
 }
 
@@ -105,7 +130,7 @@ function addStopsToMap(stops) {
     
     // Create a path connecting all stops
     const stopPoints = stops.map(stop => [stop.latitude, stop.longitude]);
-    routePath = L.polyline(stopPoints, { color: '#ff3b30', weight: 3, opacity: 0.7 }).addTo(map);
+    routePath = L.polyline(stopPoints, { color: '#F12D2F', weight: 3, opacity: 0.7 }).addTo(map);
     
     // Fit map to show all stops
     if (stopPoints.length > 0) {
@@ -265,6 +290,7 @@ function initializeDriverTracking() {
     const activeTrackingToggle = document.getElementById('activeTracking');
     const driverStatus = document.getElementById('driverStatus');
     const stopTrackingBtn = document.getElementById('stopTracking');
+    const requestPermissionBtn = document.getElementById('requestPermission');
     
     // Start tracking when the page loads
     startTracking();
@@ -289,16 +315,67 @@ function initializeDriverTracking() {
         driverStatus.className = 'alert alert-danger';
         driverStatus.innerHTML = '<i class="fas fa-stop-circle me-2"></i> Tracking stopped';
     });
+    
+    // Request notification permission
+    requestPermissionBtn.addEventListener('click', function() {
+        requestNotificationPermission();
+    });
+    
+    // Check if we already have notification permission
+    if ('Notification' in window) {
+        if (Notification.permission === 'granted') {
+            requestPermissionBtn.disabled = true;
+            requestPermissionBtn.innerHTML = '<i class="fas fa-check me-2"></i> Notifications Enabled';
+        } else if (Notification.permission === 'denied') {
+            requestPermissionBtn.innerHTML = '<i class="fas fa-times me-2"></i> Notifications Blocked';
+        }
+    } else {
+        requestPermissionBtn.disabled = true;
+        requestPermissionBtn.innerHTML = '<i class="fas fa-times me-2"></i> Notifications Not Supported';
+    }
+}
+
+// Request notification permission
+function requestNotificationPermission() {
+    if ('Notification' in window) {
+        Notification.requestPermission().then(permission => {
+            const requestPermissionBtn = document.getElementById('requestPermission');
+            
+            if (permission === 'granted') {
+                // Show a test notification
+                new Notification('Arrivo Driver Tracking', {
+                    body: 'Notifications enabled! You will be notified of any tracking issues.',
+                    icon: '/static/images/logo.png'
+                });
+                
+                requestPermissionBtn.disabled = true;
+                requestPermissionBtn.innerHTML = '<i class="fas fa-check me-2"></i> Notifications Enabled';
+            } else if (permission === 'denied') {
+                requestPermissionBtn.innerHTML = '<i class="fas fa-times me-2"></i> Notifications Blocked';
+                alert('Please enable notifications in your browser settings to receive tracking alerts.');
+            }
+        });
+    }
 }
 
 // Start tracking driver location
 function startTracking() {
     if (navigator.geolocation) {
+        // First, get a single position to immediately show the driver's location
+        navigator.geolocation.getCurrentPosition(
+            updateDriverPosition,
+            handleLocationError,
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+        
+        // Then start watching for position updates
         watchId = navigator.geolocation.watchPosition(
             updateDriverPosition,
             handleLocationError,
-            { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+            { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
         );
+        
+        console.log('Geolocation tracking started');
     } else {
         alert('Geolocation is not supported by this browser.');
     }
@@ -318,9 +395,34 @@ function updateDriverPosition(position) {
     const lng = position.coords.longitude;
     const heading = position.coords.heading || 0;
     const speed = position.coords.speed ? position.coords.speed * 3.6 : 0; // Convert m/s to km/h
+    const accuracy = position.coords.accuracy || 0;
     
     // Update current position
     currentPosition = [lat, lng];
+    
+    // Update driver status with accuracy information
+    const driverStatus = document.getElementById('driverStatus');
+    if (accuracy > 100) {
+        driverStatus.className = 'alert alert-warning';
+        driverStatus.innerHTML = `<i class="fas fa-broadcast-tower me-2"></i> Your location is being shared (Low accuracy: ${Math.round(accuracy)}m)`;
+    } else {
+        driverStatus.className = 'alert alert-success';
+        driverStatus.innerHTML = `<i class="fas fa-broadcast-tower me-2"></i> Your location is being shared (Accuracy: ${Math.round(accuracy)}m)`;
+    }
+    
+    // Update driver's marker on the map if it exists
+    if (ejeepMarker) {
+        ejeepMarker.setLatLng([lat, lng]);
+        // Center map on driver's position
+        map.panTo([lat, lng]);
+    } else {
+        // Create marker if it doesn't exist
+        ejeepMarker = L.marker([lat, lng], { icon: ejeepIcon })
+            .addTo(map)
+            .bindPopup(`<b>EJeep ${lineId}</b><br>Driver's position`);
+    }
+    
+    console.log(`Position update: ${lat}, ${lng}, heading: ${heading}, speed: ${speed}, accuracy: ${accuracy}m`);
     
     // Send position to server
     fetch('/landing/api/ejeep/update_location/', {
@@ -337,14 +439,23 @@ function updateDriverPosition(position) {
             speed: speed
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         if (!data.success) {
             console.error('Error updating location:', data.error);
+            driverStatus.className = 'alert alert-warning';
+            driverStatus.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i> Server error: ${data.error}`;
         }
     })
     .catch(error => {
         console.error('Error updating location:', error);
+        driverStatus.className = 'alert alert-warning';
+        driverStatus.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i> Connection error: ${error.message}`;
     });
 }
 
@@ -353,24 +464,38 @@ function handleLocationError(error) {
     let errorMessage;
     switch(error.code) {
         case error.PERMISSION_DENIED:
-            errorMessage = "User denied the request for Geolocation.";
+            errorMessage = "User denied the request for Geolocation. Please enable location permissions in your browser settings and refresh the page.";
             break;
         case error.POSITION_UNAVAILABLE:
-            errorMessage = "Location information is unavailable.";
+            errorMessage = "Location information is unavailable. Please check your device's GPS or network connection.";
             break;
         case error.TIMEOUT:
-            errorMessage = "The request to get user location timed out.";
+            errorMessage = "The request to get user location timed out. Please try again.";
+            // Try to restart tracking after a timeout error
+            setTimeout(() => {
+                if (document.getElementById('activeTracking').checked) {
+                    startTracking();
+                }
+            }, 5000);
             break;
         case error.UNKNOWN_ERROR:
-            errorMessage = "An unknown error occurred.";
+            errorMessage = "An unknown error occurred. Please refresh the page and try again.";
             break;
     }
     
-    console.error('Geolocation error:', errorMessage);
+    console.error('Geolocation error:', errorMessage, error);
     
     const driverStatus = document.getElementById('driverStatus');
     driverStatus.className = 'alert alert-danger';
     driverStatus.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i> ${errorMessage}`;
+    
+    // Show a browser notification if possible
+    if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('Arrivo Tracking Error', {
+            body: errorMessage,
+            icon: '/static/images/logo.png'
+        });
+    }
 }
 
 // Helper function to calculate distance between two points (Haversine formula)

@@ -16,6 +16,9 @@ def index(request):
 def catalogue(request):
     return render(request, 'landing/catalogue.html')
 
+def about(request):
+    return render(request, 'landing/about.html')
+
 # Authentication views
 def register(request):
     if request.method == 'POST':
