@@ -1,0 +1,120 @@
+{% extends 'landing/base.html' %}
+{% load static %}
+
+{% block title %}About Us - Arrivo{% endblock %}
+
+{% block content %}
+<!-- About Us Hero Section -->
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-4">About Arrivo</h1>
+                <p class="lead mb-4">Arrivo is a real-time tracking system for the EJeep transportation lines in Ateneo de Manila University.</p>
+                <p class="mb-5">Our mission is to make campus transportation more efficient and convenient for students, faculty, and visitors. With Arrivo, you can track the exact location of EJeeps on Line A and Line B, see estimated arrival times, and plan your journey accordingly.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Team Section -->
+<section class="py-5 bg-white">
+    <div class="container">
+        <h2 class="text-center mb-5">Meet Our Team</h2>
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="team-photo mb-5">
+                    <img src="{% static 'images/team.jpg' %}" alt="Arrivo Team" class="img-fluid rounded shadow">
+                </div>
+                
+                <div class="row mt-5">
+                    <!-- Row 1 -->
+                    <div class="col-md-4 text-center mb-4">
+                        <h4>Vincent William Chua</h4>
+                        <p class="text-muted">CEO</p>
+                        <p>Sunny Street Co-Founder (JSEC 2023-2024)<br>
+                           Mirai External Liaison (JSEC 2023-2024)<br>
+                           Kebro's Co-owner (JSEC 2024-2025)</p>
+                    </div>
+                    
+                    <div class="col-md-4 text-center mb-4">
+                        <h4>Mat Jirvonn Reyes</h4>
+                        <p class="text-muted">COO</p>
+                        <p>NUS NOC Exchange student 2024<br>
+                           Business Development Intern at BLOCK71<br>
+                           Kebro's Co-owner & COO (JSEC 2024-2025)</p>
+                    </div>
+                    
+                    <div class="col-md-4 text-center mb-4">
+                        <h4>Razzelle Chloe De Leon</h4>
+                        <p class="text-muted">CCO</p>
+                        <p>Leadership Development AVP<br>
+                           Business Development Intern</p>
+                    </div>
+                    
+                    <!-- Row 2 -->
+                    <div class="col-md-4 text-center mb-4">
+                        <h4>Antonio Vicente Enriquez</h4>
+                        <p class="text-muted">CTO</p>
+                        <p>Harvard CS50 Participant<br>
+                           Ateneo SHS ProgVar Member<br>
+                           BYTE AVP For Community Engagement<br>
+                           Loyola Gaming HR Department Pool</p>
+                    </div>
+                    
+                    <div class="col-md-4 text-center mb-4">
+                        <h4>Luis Sebastian de Guzman</h4>
+                        <p class="text-muted">CMO</p>
+                        <p>Aibo Co-Founder<br>
+                           Zing Social Media Manager</p>
+                    </div>
+                    
+                    <div class="col-md-4 text-center mb-4">
+                        <h4>Frederick Bance</h4>
+                        <p class="text-muted">CFO</p>
+                        <p>Investment Analyst<br>
+                           Analytics Governance<br>
+                           Strategy and Business Partner<br>
+                           Business Development</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Our Technology Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="text-center mb-4">Our Technology</h2>
+                <p class="mb-4">We use advanced GPS tracking technology to provide accurate, real-time information about EJeep locations, helping you save time and reduce waiting at stops.</p>
+                <div class="row mt-5">
+                    <div class="col-md-4 text-center mb-4">
+                        <div class="feature-icon">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </div>
+                        <h4>Real-time Tracking</h4>
+                        <p>GPS-based location tracking with high accuracy</p>
+                    </div>
+                    <div class="col-md-4 text-center mb-4">
+                        <div class="feature-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h4>ETA Prediction</h4>
+                        <p>Accurate arrival time predictions</p>
+                    </div>
+                    <div class="col-md-4 text-center mb-4">
+                        <div class="feature-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h4>Mobile Friendly</h4>
+                        <p>Works on all devices, anywhere on campus</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,16 +1,26 @@
 /* Arrivo CSS Styles */
 
 :root {
-    --primary-color: #ff3b30;
+    --primary-color: #F12D2F;
     --secondary-color: #000000;
-    --background-color: #f8f9fa;
-    --text-color: #333333;
+    --background-color: #ffffff;
+    --text-color: #000000;
 }
 
 body {
     font-family: 'Montserrat', sans-serif;
     background-color: var(--background-color);
     color: var(--text-color);
+}
+
+/* Update all bg-primary elements to use our primary color */
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+/* Update all text-primary elements to use our primary color */
+.text-primary {
+    color: var(--primary-color) !important;
 }
 
 .navbar {
@@ -28,8 +38,8 @@ body {
 }
 
 .btn-primary:hover {
-    background-color: #e0352b;
-    border-color: #e0352b;
+    background-color: #d12729;
+    border-color: #d12729;
 }
 
 .btn-outline-primary {
@@ -46,7 +56,7 @@ body {
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    background-color: rgba(255, 59, 48, 0.1);
+    background-color: rgba(241, 45, 47, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -97,10 +107,11 @@ footer {
 }
 
 .driver-controls {
-    background-color: #f8f9fa;
+    background-color: #ffffff;
     border-radius: 8px;
     padding: 20px;
     margin-top: 20px;
+    border: 1px solid #e0e0e0;
 }
 
 /* Hero section */
@@ -122,7 +133,7 @@ footer {
 /* Features section */
 .features {
     padding: 80px 0;
-    background-color: #f8f9fa;
+    background-color: #ffffff;
 }
 
 .feature-card {
