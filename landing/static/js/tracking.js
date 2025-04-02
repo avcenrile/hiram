@@ -291,9 +291,17 @@ function initializeDriverTracking() {
     const driverStatus = document.getElementById('driverStatus');
     const stopTrackingBtn = document.getElementById('stopTracking');
     const requestPermissionBtn = document.getElementById('requestPermission');
+    const startTrackingBtn = document.getElementById('startTracking');
     
-    // Start tracking when the page loads
-    startTracking();
+    // Don't start tracking automatically - wait for user action
+    driverStatus.className = 'alert alert-warning';
+    driverStatus.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i> Click "Start Tracking" to share your location';
+    
+    // Start tracking button
+    startTrackingBtn.addEventListener('click', function() {
+        startTracking();
+        activeTrackingToggle.checked = true;
+    });
     
     // Toggle tracking on/off
     activeTrackingToggle.addEventListener('change', function() {
@@ -338,44 +346,80 @@ function initializeDriverTracking() {
 // Request notification permission
 function requestNotificationPermission() {
     if ('Notification' in window) {
-        Notification.requestPermission().then(permission => {
-            const requestPermissionBtn = document.getElementById('requestPermission');
-            
-            if (permission === 'granted') {
-                // Show a test notification
-                new Notification('Arrivo Driver Tracking', {
-                    body: 'Notifications enabled! You will be notified of any tracking issues.',
-                    icon: '/static/images/logo.png'
-                });
-                
-                requestPermissionBtn.disabled = true;
-                requestPermissionBtn.innerHTML = '<i class="fas fa-check me-2"></i> Notifications Enabled';
-            } else if (permission === 'denied') {
-                requestPermissionBtn.innerHTML = '<i class="fas fa-times me-2"></i> Notifications Blocked';
-                alert('Please enable notifications in your browser settings to receive tracking alerts.');
-            }
-        });
+        const requestPermissionBtn = document.getElementById('requestPermission');
+        requestPermissionBtn.disabled = true;
+        requestPermissionBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Requesting...';
+        
+        // Add a small delay to prevent conflicts with other permission requests
+        setTimeout(() => {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    // Show a test notification after a short delay
+                    setTimeout(() => {
+                        try {
+                            new Notification('Arrivo Driver Tracking', {
+                                body: 'Notifications enabled! You will be notified of any tracking issues.',
+                                icon: '/static/images/logo.png'
+                            });
+                        } catch (e) {
+                            console.error('Error showing notification:', e);
+                        }
+                    }, 1000);
+                    
+                    requestPermissionBtn.disabled = true;
+                    requestPermissionBtn.innerHTML = '<i class="fas fa-check me-2"></i> Notifications Enabled';
+                } else if (permission === 'denied') {
+                    requestPermissionBtn.disabled = false;
+                    requestPermissionBtn.innerHTML = '<i class="fas fa-times me-2"></i> Notifications Blocked';
+                } else {
+                    // Permission request was dismissed
+                    requestPermissionBtn.disabled = false;
+                    requestPermissionBtn.innerHTML = '<i class="fas fa-bell me-2"></i> Enable Notifications';
+                }
+            }).catch(error => {
+                console.error('Error requesting notification permission:', error);
+                requestPermissionBtn.disabled = false;
+                requestPermissionBtn.innerHTML = '<i class="fas fa-bell me-2"></i> Enable Notifications';
+            });
+        }, 1000);
     }
 }
 
 // Start tracking driver location
 function startTracking() {
     if (navigator.geolocation) {
-        // First, get a single position to immediately show the driver's location
-        navigator.geolocation.getCurrentPosition(
-            updateDriverPosition,
-            handleLocationError,
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        );
-        
-        // Then start watching for position updates
-        watchId = navigator.geolocation.watchPosition(
-            updateDriverPosition,
-            handleLocationError,
-            { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
-        );
-        
-        console.log('Geolocation tracking started');
+        try {
+            const driverStatus = document.getElementById('driverStatus');
+            driverStatus.className = 'alert alert-info';
+            driverStatus.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Requesting location access...';
+            
+            // Use a timeout to ensure we're not requesting permissions too quickly
+            setTimeout(() => {
+                // First, get a single position to immediately show the driver's location
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        // Successfully got position, now start continuous tracking
+                        updateDriverPosition(position);
+                        
+                        // Start watching for position updates
+                        if (watchId === null) {
+                            watchId = navigator.geolocation.watchPosition(
+                                updateDriverPosition,
+                                handleLocationError,
+                                { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+                            );
+                        }
+                        
+                        console.log('Geolocation tracking started');
+                    },
+                    handleLocationError,
+                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+                );
+            }, 500);
+        } catch (e) {
+            console.error('Error starting tracking:', e);
+            alert('Error starting location tracking. Please try again or use a different browser.');
+        }
     } else {
         alert('Geolocation is not supported by this browser.');
     }
@@ -462,32 +506,59 @@ function updateDriverPosition(position) {
 // Handle geolocation errors
 function handleLocationError(error) {
     let errorMessage;
+    const driverStatus = document.getElementById('driverStatus');
+    const activeTrackingToggle = document.getElementById('activeTracking');
+    
     switch(error.code) {
         case error.PERMISSION_DENIED:
-            errorMessage = "User denied the request for Geolocation. Please enable location permissions in your browser settings and refresh the page.";
+            errorMessage = "Location permission denied. Please click 'Start Tracking' again and allow location access when prompted.";
+            // Provide specific instructions for common browsers
+            if (navigator.userAgent.indexOf("Chrome") !== -1) {
+                errorMessage += " In Chrome, look for the location icon in the address bar and click it to enable permissions.";
+            } else if (navigator.userAgent.indexOf("Firefox") !== -1) {
+                errorMessage += " In Firefox, check the permissions icon in the address bar.";
+            } else if (navigator.userAgent.indexOf("Safari") !== -1) {
+                errorMessage += " In Safari, check your browser settings under Privacy & Security > Location Services.";
+            }
+            // Reset the tracking toggle
+            activeTrackingToggle.checked = false;
             break;
         case error.POSITION_UNAVAILABLE:
             errorMessage = "Location information is unavailable. Please check your device's GPS or network connection.";
             break;
         case error.TIMEOUT:
-            errorMessage = "The request to get user location timed out. Please try again.";
-            // Try to restart tracking after a timeout error
-            setTimeout(() => {
-                if (document.getElementById('activeTracking').checked) {
-                    startTracking();
-                }
-            }, 5000);
+            errorMessage = "The request to get your location timed out. Please try again by clicking 'Start Tracking'.";
+            // Don't auto-restart, let the user try again manually
+            activeTrackingToggle.checked = false;
             break;
         case error.UNKNOWN_ERROR:
-            errorMessage = "An unknown error occurred. Please refresh the page and try again.";
+            errorMessage = "An unknown error occurred. Please try again or use a different browser.";
+            activeTrackingToggle.checked = false;
             break;
     }
     
     console.error('Geolocation error:', errorMessage, error);
     
-    const driverStatus = document.getElementById('driverStatus');
     driverStatus.className = 'alert alert-danger';
     driverStatus.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i> ${errorMessage}`;
+    
+    // Clear any existing watch
+    if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+    }
+    
+    // Show a notification if permissions are granted
+    if ('Notification' in window && Notification.permission === 'granted') {
+        try {
+            new Notification('Arrivo Tracking Error', {
+                body: errorMessage,
+                icon: '/static/images/logo.png'
+            });
+        } catch (e) {
+            console.error('Error showing notification:', e);
+        }
+    }
     
     // Show a browser notification if possible
     if ('Notification' in window && Notification.permission === 'granted') {
