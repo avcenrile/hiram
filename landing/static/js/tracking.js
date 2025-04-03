@@ -1,6 +1,7 @@
 /**
  * Arrivo EJeep Tracking JavaScript
  * Handles real-time tracking of EJeeps on the map
+ * Enhanced version with improved tracking and ETA calculations
  */
 
 // Map and tracking variables
@@ -14,6 +15,20 @@ let stops = [];
 let nextStopIndex = 0;
 let lineId = '';
 let isDriver = false;
+let lastKnownLocation = null;
+let connectionAttempts = 0;
+let maxConnectionAttempts = 5;
+let reconnectInterval = null;
+let trafficConditions = 'normal'; // Can be 'normal', 'moderate', 'heavy'
+let delayReason = null;
+let lastUpdateTime = null;
+
+// Traffic delay factors (multipliers for ETA)
+const trafficFactors = {
+    'normal': 1.0,
+    'moderate': 1.3,
+    'heavy': 1.8
+};
 
 // Initialize the map
 function initializeMap(mapElementId, lineIdentifier, driverStatus) {
@@ -30,7 +45,7 @@ function initializeMap(mapElementId, lineIdentifier, driverStatus) {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
     
-    // Use default Leaflet markers
+    // Create custom icons for better visibility
     const ejeepIcon = L.divIcon({
         className: 'ejeep-marker',
         html: '<i class="fas fa-bus" style="color: #F12D2F; font-size: 24px;"></i>',
@@ -50,8 +65,8 @@ function initializeMap(mapElementId, lineIdentifier, driverStatus) {
     // Fetch initial data
     fetchEJeepLocation();
     
-    // Set up periodic updates
-    setInterval(fetchEJeepLocation, 5000); // Update every 5 seconds
+    // Set up periodic updates with reconnection logic
+    startLocationUpdates();
     
     // Set up driver tracking if applicable
     if (isDriver) {
@@ -59,13 +74,34 @@ function initializeMap(mapElementId, lineIdentifier, driverStatus) {
     }
 }
 
-// Fetch EJeep location from API
+// Start periodic location updates with reconnection logic
+function startLocationUpdates() {
+    // Clear any existing interval
+    if (reconnectInterval) {
+        clearInterval(reconnectInterval);
+    }
+    
+    // Set up a new interval for updates
+    reconnectInterval = setInterval(() => {
+        fetchEJeepLocation();
+    }, 5000); // Update every 5 seconds
+}
+
+// Fetch EJeep location from API with improved error handling
 function fetchEJeepLocation() {
+    // Show loading indicator
+    if (!lastUpdateTime) {
+        document.getElementById('ejeepStatus').textContent = 'Connecting...';
+        document.getElementById('ejeepStatus').className = 'badge bg-info';
+    }
+    
     fetch(`/landing/api/ejeep/location/${lineId}/`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
+            // Reset connection attempts on successful connection
+            connectionAttempts = 0;
             return response.json();
         })
         .then(data => {
@@ -78,6 +114,8 @@ function fetchEJeepLocation() {
                 
                 // Update EJeep location if available
                 if (data.location) {
+                    lastKnownLocation = data.location;
+                    lastUpdateTime = new Date();
                     updateEJeepLocation(data.location);
                     
                     // Check if the location is recent (within the last 5 minutes)
@@ -89,6 +127,9 @@ function fetchEJeepLocation() {
                         // Location data is stale
                         document.getElementById('ejeepStatus').textContent = 'Connection Lost';
                         document.getElementById('ejeepStatus').className = 'badge bg-warning';
+                        
+                        // Show a notification about stale data
+                        showNotification('Tracking Update', 'EJeep location data is stale. The driver may have stopped sharing their location.');
                     }
                 } else {
                     // No active EJeep
@@ -106,16 +147,50 @@ function fetchEJeepLocation() {
                         ejeepMarker = null;
                     }
                 }
+                
+                // Simulate traffic conditions (in a real app, this would come from the server)
+                simulateTrafficConditions();
             } else {
                 console.error('Error fetching EJeep location:', data.error);
+                handleConnectionError(data.error);
             }
         })
         .catch(error => {
             console.error('Error fetching EJeep location:', error);
-            // Show error in UI
-            document.getElementById('ejeepStatus').textContent = 'Connection Error';
-            document.getElementById('ejeepStatus').className = 'badge bg-danger';
+            handleConnectionError(error.message);
         });
+}
+
+// Handle connection errors with exponential backoff
+function handleConnectionError(errorMessage) {
+    connectionAttempts++;
+    
+    // Show error in UI
+    document.getElementById('ejeepStatus').textContent = 'Connection Error';
+    document.getElementById('ejeepStatus').className = 'badge bg-danger';
+    
+    // If we have a last known location, keep showing it but mark it as stale
+    if (lastKnownLocation && ejeepMarker) {
+        const now = new Date();
+        const lastUpdated = new Date(lastKnownLocation.last_updated);
+        const diffMinutes = (now - lastUpdated) / (1000 * 60);
+        
+        if (diffMinutes > 5) {
+            ejeepMarker.setOpacity(0.5); // Make the marker semi-transparent to indicate stale data
+            
+            // Update the popup to show it's stale
+            ejeepMarker.bindPopup(`<b>EJeep ${lineId}</b><br>Last updated: ${lastKnownLocation.last_updated}<br><span style="color: red;">Data is stale</span>`);
+        }
+    }
+    
+    // If we've tried too many times, slow down the reconnection attempts
+    if (connectionAttempts > maxConnectionAttempts) {
+        clearInterval(reconnectInterval);
+        reconnectInterval = setInterval(fetchEJeepLocation, 15000); // Try every 15 seconds after multiple failures
+        
+        // Show a notification about connection issues
+        showNotification('Connection Issue', 'Having trouble connecting to the tracking server. Will keep trying.');
+    }
 }
 
 // Add stops to the map
@@ -146,6 +221,7 @@ function updateEJeepLocation(location) {
     // Update marker
     if (ejeepMarker) {
         ejeepMarker.setLatLng([lat, lng]);
+        ejeepMarker.setOpacity(1.0); // Ensure marker is fully visible
     } else {
         ejeepMarker = L.marker([lat, lng], { icon: ejeepIcon })
             .addTo(map)
@@ -164,7 +240,7 @@ function updateEJeepLocation(location) {
     }
 }
 
-// Calculate next stop and ETA
+// Calculate next stop and ETA with traffic considerations
 function updateNextStopInfo(currentPosition) {
     // Find the closest stop
     let minDistance = Infinity;
@@ -189,7 +265,7 @@ function updateNextStopInfo(currentPosition) {
     // Update UI
     document.getElementById('nextStopName').textContent = nextStop.name;
     
-    // Calculate ETA based on distance and average speed (assuming 15 km/h)
+    // Calculate ETA based on distance, average speed, and traffic conditions
     const distanceToNextStop = calculateDistance(
         currentPosition[0], currentPosition[1],
         nextStop.latitude, nextStop.longitude
@@ -198,11 +274,14 @@ function updateNextStopInfo(currentPosition) {
     // Convert distance from km to meters
     const distanceInMeters = distanceToNextStop * 1000;
     
-    // Assume average speed of 15 km/h = 4.17 m/s
-    const averageSpeed = 4.17;
+    // Base average speed of 15 km/h = 4.17 m/s
+    const baseSpeed = 4.17;
     
-    // Calculate ETA in seconds
-    const etaSeconds = distanceInMeters / averageSpeed;
+    // Apply traffic factor to adjust speed
+    const adjustedSpeed = baseSpeed / trafficFactors[trafficConditions];
+    
+    // Calculate ETA in seconds with traffic consideration
+    const etaSeconds = distanceInMeters / adjustedSpeed;
     
     // Format ETA
     let etaText;
@@ -211,6 +290,16 @@ function updateNextStopInfo(currentPosition) {
     } else {
         const etaMinutes = Math.round(etaSeconds / 60);
         etaText = `${etaMinutes} min`;
+    }
+    
+    // Add traffic info if not normal
+    if (trafficConditions !== 'normal') {
+        etaText += ` (${trafficConditions} traffic)`;
+    }
+    
+    // Add delay reason if any
+    if (delayReason) {
+        etaText += ` - Delay: ${delayReason}`;
     }
     
     document.getElementById('eta').textContent = etaText;
@@ -230,7 +319,7 @@ function updateNextStopInfo(currentPosition) {
     updateAllStopsETA(currentPosition);
 }
 
-// Update ETAs for all stops
+// Update ETAs for all stops with traffic considerations
 function updateAllStopsETA(currentPosition) {
     let cumulativeDistance = 0;
     let cumulativeTime = 0;
@@ -244,8 +333,14 @@ function updateAllStopsETA(currentPosition) {
         stops[nextStopIndex].latitude, stops[nextStopIndex].longitude
     );
     
-    // Convert to meters and calculate time (assuming 15 km/h = 4.17 m/s)
-    const timeToNextStop = (distanceToNextStop * 1000) / 4.17;
+    // Base speed (15 km/h = 4.17 m/s)
+    const baseSpeed = 4.17;
+    
+    // Apply traffic factor to adjust speed
+    const adjustedSpeed = baseSpeed / trafficFactors[trafficConditions];
+    
+    // Convert to meters and calculate time with traffic consideration
+    const timeToNextStop = (distanceToNextStop * 1000) / adjustedSpeed;
     
     // Update ETAs for all stops
     for (let i = 0; i < stops.length; i++) {
@@ -263,9 +358,9 @@ function updateAllStopsETA(currentPosition) {
                 stop.latitude, stop.longitude
             );
             
-            // Add to cumulative distance and time
+            // Add to cumulative distance and time with traffic consideration
             cumulativeDistance += distance;
-            cumulativeTime += (distance * 1000) / 4.17; // Convert to seconds
+            cumulativeTime += (distance * 1000) / adjustedSpeed; // Convert to seconds
         }
         
         // Format and display ETA
@@ -277,10 +372,73 @@ function updateAllStopsETA(currentPosition) {
             etaText = `${etaMinutes}m`;
         }
         
+        // Add traffic indicator for non-normal conditions
+        if (trafficConditions !== 'normal') {
+            etaText += '*'; // Asterisk indicates traffic delay
+        }
+        
         // Update the badge for this stop
         const etaBadge = document.getElementById(`stop-eta-${stop.id}`);
         if (etaBadge) {
             etaBadge.textContent = etaText;
+            
+            // Change badge color based on traffic conditions
+            if (trafficConditions === 'heavy') {
+                etaBadge.className = 'badge bg-danger rounded-pill';
+            } else if (trafficConditions === 'moderate') {
+                etaBadge.className = 'badge bg-warning rounded-pill';
+            } else {
+                etaBadge.className = 'badge bg-primary rounded-pill';
+            }
+        }
+    }
+}
+
+// Simulate traffic conditions (in a real app, this would come from the server)
+function simulateTrafficConditions() {
+    // In a real app, this would be based on real-time traffic data
+    // For this demo, we'll randomly change traffic conditions
+    
+    // Only change traffic conditions occasionally (10% chance)
+    if (Math.random() < 0.1) {
+        const rand = Math.random();
+        
+        if (rand < 0.6) {
+            // 60% chance of normal traffic
+            trafficConditions = 'normal';
+            delayReason = null;
+        } else if (rand < 0.9) {
+            // 30% chance of moderate traffic
+            trafficConditions = 'moderate';
+            delayReason = 'Moderate traffic congestion';
+        } else {
+            // 10% chance of heavy traffic
+            trafficConditions = 'heavy';
+            delayReason = 'Heavy traffic due to rush hour';
+        }
+        
+        // Occasionally add specific delay reasons
+        if (trafficConditions !== 'normal' && Math.random() < 0.3) {
+            const reasons = [
+                'Road construction ahead',
+                'Minor accident reported',
+                'Event causing congestion',
+                'Weather-related slowdown'
+            ];
+            delayReason = reasons[Math.floor(Math.random() * reasons.length)];
+        }
+        
+        // Update UI with traffic info if we have an active ejeep
+        if (ejeepMarker && lastKnownLocation) {
+            updateNextStopInfo([
+                parseFloat(lastKnownLocation.latitude),
+                parseFloat(lastKnownLocation.longitude)
+            ]);
+            
+            // Show notification for significant traffic changes
+            if (trafficConditions === 'heavy') {
+                showNotification('Traffic Alert', `Heavy traffic reported. ${delayReason || 'Expect delays.'}`);
+            }
         }
     }
 }
@@ -356,14 +514,7 @@ function requestNotificationPermission() {
                 if (permission === 'granted') {
                     // Show a test notification after a short delay
                     setTimeout(() => {
-                        try {
-                            new Notification('Arrivo Driver Tracking', {
-                                body: 'Notifications enabled! You will be notified of any tracking issues.',
-                                icon: '/static/images/logo.png'
-                            });
-                        } catch (e) {
-                            console.error('Error showing notification:', e);
-                        }
+                        showNotification('Arrivo Driver Tracking', 'Notifications enabled! You will be notified of any tracking issues.');
                     }, 1000);
                     
                     requestPermissionBtn.disabled = true;
@@ -385,13 +536,34 @@ function requestNotificationPermission() {
     }
 }
 
-// Start tracking driver location
+// Show a notification
+function showNotification(title, message) {
+    if ('Notification' in window && Notification.permission === 'granted') {
+        try {
+            new Notification(title, {
+                body: message,
+                icon: '/static/images/logo.png'
+            });
+        } catch (e) {
+            console.error('Error showing notification:', e);
+        }
+    }
+}
+
+// Start tracking driver location with improved error handling
 function startTracking() {
     if (navigator.geolocation) {
         try {
             const driverStatus = document.getElementById('driverStatus');
             driverStatus.className = 'alert alert-info';
             driverStatus.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Requesting location access...';
+            
+            // Use high accuracy options for better tracking
+            const geoOptions = {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 15000
+            };
             
             // Use a timeout to ensure we're not requesting permissions too quickly
             setTimeout(() => {
@@ -401,19 +573,34 @@ function startTracking() {
                         // Successfully got position, now start continuous tracking
                         updateDriverPosition(position);
                         
-                        // Start watching for position updates
+                        // Start watching for position updates with more frequent updates
                         if (watchId === null) {
                             watchId = navigator.geolocation.watchPosition(
                                 updateDriverPosition,
                                 handleLocationError,
-                                { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+                                geoOptions
                             );
                         }
                         
                         console.log('Geolocation tracking started');
+                        
+                        // Show success message
+                        driverStatus.className = 'alert alert-success';
+                        driverStatus.innerHTML = '<i class="fas fa-broadcast-tower me-2"></i> Your location is being shared';
                     },
-                    handleLocationError,
-                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+                    (error) => {
+                        handleLocationError(error);
+                        
+                        // Try again with less strict options if high accuracy fails
+                        if (error.code === error.TIMEOUT) {
+                            navigator.geolocation.getCurrentPosition(
+                                updateDriverPosition,
+                                handleLocationError,
+                                { enableHighAccuracy: false, timeout: 30000, maximumAge: 60000 }
+                            );
+                        }
+                    },
+                    geoOptions
                 );
             }, 500);
         } catch (e) {
@@ -433,7 +620,7 @@ function stopTracking() {
     }
 }
 
-// Update driver position and send to server
+// Update driver position and send to server with improved error handling
 function updateDriverPosition(position) {
     const lat = position.coords.latitude;
     const lng = position.coords.longitude;
@@ -468,7 +655,12 @@ function updateDriverPosition(position) {
     
     console.log(`Position update: ${lat}, ${lng}, heading: ${heading}, speed: ${speed}, accuracy: ${accuracy}m`);
     
-    // Send position to server
+    // Send position to server with retry logic
+    sendPositionToServer(lat, lng, heading, speed);
+}
+
+// Send position to server with retry logic
+function sendPositionToServer(lat, lng, heading, speed, retryCount = 0) {
     fetch('/landing/api/ejeep/update_location/', {
         method: 'POST',
         headers: {
@@ -492,18 +684,34 @@ function updateDriverPosition(position) {
     .then(data => {
         if (!data.success) {
             console.error('Error updating location:', data.error);
+            const driverStatus = document.getElementById('driverStatus');
             driverStatus.className = 'alert alert-warning';
             driverStatus.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i> Server error: ${data.error}`;
+            
+            // Retry if needed
+            if (retryCount < 3) {
+                setTimeout(() => {
+                    sendPositionToServer(lat, lng, heading, speed, retryCount + 1);
+                }, 1000 * (retryCount + 1)); // Exponential backoff
+            }
         }
     })
     .catch(error => {
         console.error('Error updating location:', error);
+        const driverStatus = document.getElementById('driverStatus');
         driverStatus.className = 'alert alert-warning';
         driverStatus.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i> Connection error: ${error.message}`;
+        
+        // Retry if needed
+        if (retryCount < 3) {
+            setTimeout(() => {
+                sendPositionToServer(lat, lng, heading, speed, retryCount + 1);
+            }, 1000 * (retryCount + 1)); // Exponential backoff
+        }
     });
 }
 
-// Handle geolocation errors
+// Handle geolocation errors with improved user feedback
 function handleLocationError(error) {
     let errorMessage;
     const driverStatus = document.getElementById('driverStatus');
@@ -549,24 +757,7 @@ function handleLocationError(error) {
     }
     
     // Show a notification if permissions are granted
-    if ('Notification' in window && Notification.permission === 'granted') {
-        try {
-            new Notification('Arrivo Tracking Error', {
-                body: errorMessage,
-                icon: '/static/images/logo.png'
-            });
-        } catch (e) {
-            console.error('Error showing notification:', e);
-        }
-    }
-    
-    // Show a browser notification if possible
-    if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('Arrivo Tracking Error', {
-            body: errorMessage,
-            icon: '/static/images/logo.png'
-        });
-    }
+    showNotification('Arrivo Tracking Error', errorMessage);
 }
 
 // Helper function to calculate distance between two points (Haversine formula)
@@ -574,11 +765,11 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     const R = 6371; // Radius of the earth in km
     const dLat = deg2rad(lat2 - lat1);
     const dLon = deg2rad(lon2 - lon1);
-    const a = 
+    const a =
         Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-        Math.sin(dLon/2) * Math.sin(dLon/2); 
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     const distance = R * c; // Distance in km
     return distance;
 }
@@ -596,11 +787,11 @@ function formatTimestamp(timestamp) {
     if (date.toDateString() === now.toDateString()) {
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     } else {
-        return date.toLocaleString([], { 
-            month: 'short', 
-            day: 'numeric', 
-            hour: '2-digit', 
-            minute: '2-digit' 
+        return date.toLocaleString([], {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
         });
     }
 }
