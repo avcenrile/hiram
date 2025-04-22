@@ -23,6 +23,23 @@ let trafficConditions = 'normal'; // Can be 'normal', 'moderate', 'heavy'
 let delayReason = null;
 let lastUpdateTime = null;
 
+// Define icons globally so they're accessible to all functions
+const ejeepIcon = L.divIcon({
+    className: 'ejeep-marker',
+    html: '<i class="fas fa-bus" style="color: #F12D2F; font-size: 24px;"></i>',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12]
+});
+
+const stopIcon = L.divIcon({
+    className: 'stop-marker',
+    html: '<i class="fas fa-map-marker-alt" style="color: #000000; font-size: 20px;"></i>',
+    iconSize: [20, 20],
+    iconAnchor: [10, 20],
+    popupAnchor: [0, -20]
+});
+
 // Traffic delay factors (multipliers for ETA)
 const trafficFactors = {
     'normal': 1.0,
@@ -32,6 +49,7 @@ const trafficFactors = {
 
 // Initialize the map
 function initializeMap(mapElementId, lineIdentifier, driverStatus) {
+    
     // Set global variables
     lineId = lineIdentifier;
     isDriver = driverStatus;
@@ -106,6 +124,8 @@ function fetchEJeepLocation() {
         })
         .then(data => {
             if (data.success) {
+                // Debuggling Line
+                console.log('API Response', data);
                 // Update stops if not already loaded
                 if (stops.length === 0 && data.stops) {
                     stops = data.stops;
@@ -193,25 +213,25 @@ function handleConnectionError(errorMessage) {
     }
 }
 
-// Add stops to the map
-function addStopsToMap(stops) {
-    stops.forEach(stop => {
-        const marker = L.marker([stop.latitude, stop.longitude], { icon: stopIcon })
-            .addTo(map)
-            .bindPopup(`<b>${stop.name}</b>`);
+// // Add stops to the map
+// function addStopsToMap(stops) {
+//     stops.forEach(stop => {
+//         const marker = L.marker([stop.latitude, stop.longitude], { icon: stopIcon })
+//             .addTo(map)
+//             .bindPopup(`<b>${stop.name}</b>`);
         
-        stopMarkers.push(marker);
-    });
+//         stopMarkers.push(marker);
+//     });
     
-    // Create a path connecting all stops
-    const stopPoints = stops.map(stop => [stop.latitude, stop.longitude]);
-    routePath = L.polyline(stopPoints, { color: '#F12D2F', weight: 3, opacity: 0.7 }).addTo(map);
+//     // Create a path connecting all stops
+//     const stopPoints = stops.map(stop => [stop.latitude, stop.longitude]);
+//     routePath = L.polyline(stopPoints, { color: '#F12D2F', weight: 3, opacity: 0.7 }).addTo(map);
     
-    // Fit map to show all stops
-    if (stopPoints.length > 0) {
-        map.fitBounds(routePath.getBounds(), { padding: [50, 50] });
-    }
-}
+//     // Fit map to show all stops
+//     if (stopPoints.length > 0) {
+//         map.fitBounds(routePath.getBounds(), { padding: [50, 50] });
+//     }
+// }
 
 // Update EJeep location on the map
 function updateEJeepLocation(location) {
