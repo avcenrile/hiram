@@ -798,20 +798,33 @@ function deg2rad(deg) {
     return deg * (Math.PI/180);
 }
 
-// Format timestamp
+// Format timestamp with explicit timezone adjustment for UTC+8
 function formatTimestamp(timestamp) {
+    // Create date object from the timestamp
     const date = new Date(timestamp);
+    
+    // Add 8 hours to convert from UTC to Philippines time (UTC+8)
+    date.setHours(date.getHours() + 8);
+    
     const now = new Date();
+    // Also adjust now to ensure date comparison works correctly
+    const adjustedNow = new Date();
+    adjustedNow.setHours(adjustedNow.getHours() + 8);
     
     // If it's today, just show the time
-    if (date.toDateString() === now.toDateString()) {
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (date.toDateString() === adjustedNow.toDateString()) {
+        return date.toLocaleTimeString([], { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: true // Use AM/PM format
+        });
     } else {
         return date.toLocaleString([], {
             month: 'short',
             day: 'numeric',
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
+            hour12: true // Use AM/PM format
         });
     }
 }
